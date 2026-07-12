@@ -1,5 +1,6 @@
 package org.orgless.server;
 
+import org.orgless.constants.Proxy;
 import org.orgless.parsers.RequestParser;
 import org.orgless.request_response.HttpRequest;
 import org.orgless.response.HttpStatus;
@@ -22,6 +23,8 @@ public class Server {
     private final AtomicBoolean isClosed;
 
     private final Map<String, Handler> router;
+
+    private final Controller controller = new Controller();
 
     private Server(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
@@ -64,6 +67,10 @@ public class Server {
             request = RequestParser.parseStream(in);
 
             String endpoint = request.getRequestLine().requestTarget();
+            if (getProxy(endpoint) == Proxy.BINGO) {
+                controller.httpBingoProxy(writer, request);
+                return;
+            }
             if (!router.containsKey(endpoint)) {
                 sendHtmlError(writer, HttpStatus.NOT_FOUND, "<html><body><h1>404 Not Found</h1></body></html>");
             } else {
@@ -73,6 +80,13 @@ public class Server {
             e.printStackTrace();
             System.err.println("Fatal connection error: " + e.getMessage());
         }
+    }
+
+    private Proxy getProxy(String endpoint) {
+        if (endpoint.startsWith("/httpbingo/"))
+            return Proxy.BINGO;
+
+        return null;
     }
 
     private void sendHtmlError(ResponseWriter w, HttpStatus status, String htmlBody) throws IOException {

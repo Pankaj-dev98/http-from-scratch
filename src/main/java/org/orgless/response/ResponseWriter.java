@@ -9,6 +9,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.orgless.constants.Constants.CRLF;
+import static org.orgless.constants.Constants.CRLF_BYTES;
+
 public class ResponseWriter {
 
     public enum State { INITIALIZED, STATUS_WRITTEN, HEADERS_WRITTEN, DONE }
@@ -74,5 +77,33 @@ public class ResponseWriter {
         headers.put("Content-Type", contentType);
 
         return headers;
+    }
+
+    public void writeChunkedBody(byte[] data) throws IOException {
+        int chunkSize = 0;
+        if (data == null || (chunkSize = data.length) == 0)
+            return;
+
+        String chunkSizeHex = Integer.toHexString(chunkSize);
+        out.write((chunkSizeHex + CRLF).getBytes(StandardCharsets.UTF_8));
+        out.write(data);
+        out.write(CRLF_BYTES);
+    }
+
+    public void writeChunkedBodyDone() throws IOException {
+        byte[] end = "0\r\n\r\n".getBytes(StandardCharsets.UTF_8);
+        out.write(end);
+        out.flush();
+        state = State.DONE;
+    }
+
+    private static int findCRLF(byte[] data) {
+        int n = data.length;
+
+        for (int i = 1; i < n; ++i) {
+            if (data[i] == '\n' && data[i - 1] == '\r')
+                return i - 1;
+        }
+        return -1;
     }
 }
