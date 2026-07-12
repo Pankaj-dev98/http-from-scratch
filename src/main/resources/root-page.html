@@ -3,63 +3,306 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Handwritten HTTP Server</title>
+  <title>HTTP From Scratch</title>
   <style>
-      body {
-          margin: 0;
-          font-family: Arial, Helvetica, sans-serif;
-          background: #f4f6f8;
-          color: #333;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
+      :root {
+          color-scheme: light;
+          --bg: #0b1020;
+          --bg-accent: #111a34;
+          --panel: rgba(10, 16, 32, 0.8);
+          --panel-border: rgba(144, 169, 255, 0.18);
+          --text: #eef4ff;
+          --muted: #aac0ea;
+          --strong: #7dd3fc;
+          --strong-2: #fbbf24;
+          --link: #f8fafc;
+          --shadow: rgba(2, 6, 23, 0.45);
       }
 
-      .container {
-          max-width: 700px;
-          padding: 2rem;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-          text-align: center;
+      * {
+          box-sizing: border-box;
+      }
+
+      body {
+          margin: 0;
+          min-height: 100vh;
+          font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+          color: var(--text);
+          background:
+              radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 28%),
+              radial-gradient(circle at top right, rgba(251, 191, 36, 0.12), transparent 24%),
+              linear-gradient(160deg, var(--bg) 0%, var(--bg-accent) 55%, #16213f 100%);
+      }
+
+      a {
+          color: var(--link);
+          text-decoration: none;
+      }
+
+      a:hover {
+          text-decoration: underline;
+      }
+
+      .page {
+          width: min(1120px, calc(100% - 32px));
+          margin: 0 auto;
+          padding: 40px 0 56px;
+      }
+
+      .hero {
+          display: grid;
+          grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+          gap: 24px;
+          align-items: stretch;
+      }
+
+      .panel {
+          background: var(--panel);
+          border: 1px solid var(--panel-border);
+          border-radius: 8px;
+          box-shadow: 0 24px 80px var(--shadow);
+          backdrop-filter: blur(10px);
+      }
+
+      .hero-copy {
+          padding: 32px;
+      }
+
+      .eyebrow {
+          display: inline-block;
+          margin-bottom: 14px;
+          padding: 7px 10px;
+          border-radius: 999px;
+          background: rgba(125, 211, 252, 0.12);
+          color: var(--strong);
+          font-size: 0.82rem;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
       }
 
       h1 {
-          margin-top: 0;
-          color: #2c3e50;
+          margin: 0 0 14px;
+          font-size: clamp(2.5rem, 6vw, 4.8rem);
+          line-height: 0.98;
       }
 
-      p {
-          font-size: 1.1rem;
+      .lede {
+          margin: 0 0 18px;
+          max-width: 52rem;
+          color: var(--muted);
+          font-size: 1.08rem;
+          line-height: 1.75;
+      }
+
+      .meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin: 24px 0 0;
+      }
+
+      .meta span {
+          padding: 9px 12px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.06);
+          color: #d8e6ff;
+          font-size: 0.95rem;
+      }
+
+      .hero-side {
+          padding: 24px;
+          display: grid;
+          gap: 14px;
+      }
+
+      .card-title {
+          margin: 0 0 4px;
+          font-size: 1rem;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+      }
+
+      .endpoint-card {
+          padding: 18px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+      }
+
+      .endpoint-card code {
+          display: block;
+          margin-bottom: 8px;
+          color: var(--strong-2);
+          font-size: 1rem;
+      }
+
+      .endpoint-card p {
+          margin: 0;
+          color: var(--muted);
+          line-height: 1.6;
+      }
+
+      .grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 24px;
+          margin-top: 24px;
+      }
+
+      .section {
+          padding: 24px;
+      }
+
+      h2 {
+          margin: 0 0 12px;
+          font-size: 1.2rem;
+      }
+
+      ul {
+          margin: 0;
+          padding-left: 18px;
+          color: var(--muted);
+          line-height: 1.8;
+      }
+
+      .tech-list strong {
+          color: var(--text);
+      }
+
+      .link-list {
+          display: grid;
+          gap: 12px;
+      }
+
+      .link-tile {
+          display: block;
+          padding: 16px 18px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+      }
+
+      .link-tile strong {
+          display: block;
+          color: var(--text);
+          margin-bottom: 5px;
+      }
+
+      .link-tile span {
+          color: var(--muted);
+          line-height: 1.55;
+      }
+
+      .footer-note {
+          margin-top: 24px;
+          padding: 18px 22px;
+          color: var(--muted);
           line-height: 1.7;
-          margin: 1rem 0;
       }
 
-      code {
-          display: inline-block;
-          margin-top: 1rem;
-          padding: 0.4rem 0.8rem;
-          background: #eef2f7;
-          border-radius: 6px;
-          font-family: Consolas, monospace;
+      .footer-note strong {
+          color: var(--text);
+      }
+
+      @media (max-width: 920px) {
+          .hero,
+          .grid {
+              grid-template-columns: 1fr;
+          }
+
+          .page {
+              width: min(100% - 20px, 1120px);
+              padding-top: 20px;
+              padding-bottom: 28px;
+          }
+
+          .hero-copy,
+          .hero-side,
+          .section {
+              padding: 20px;
+          }
       }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>Hello! 👋</h1>
+<main class="page">
+  <section class="hero">
+    <div class="panel hero-copy">
+      <div class="eyebrow">Portfolio Project</div>
+      <h1>HTTP From Scratch</h1>
+      <p class="lede">
+        A handwritten HTTP/1.1 server built directly on top of TCP sockets in Java.
+        It parses raw request bytes, validates request structure, routes requests without a web framework,
+        and writes well-formed responses back to the client.
+      </p>
+      <p class="lede">
+        The project also demonstrates upstream integration through Java's <code>HttpClient</code>,
+        streaming proxy responses with <code>Transfer-Encoding: chunked</code>,
+        and trailer metadata for response integrity.
+      </p>
+      <div class="meta">
+        <span>TCP sockets</span>
+        <span>Manual HTTP parsing</span>
+        <span>Chunked streaming</span>
+        <span>Response trailers</span>
+        <span>Virtual threads</span>
+      </div>
+    </div>
 
-  <p>Welcome to my <strong>handwritten HTTP server</strong>!</p>
+    <aside class="panel hero-side">
+      <div>
+        <p class="card-title">Try The Endpoints</p>
+      </div>
 
-  <p>It is a pleasure to have you here.</p>
+      <a class="endpoint-card" href="/">
+        <code>GET /</code>
+        <p>Technical landing page for the project.</p>
+      </a>
 
-  <p>
-    The response you're reading has been generated after
-    <strong>manually parsing your HTTP request</strong>.
-  </p>
+      <a class="endpoint-card" href="/funfact">
+        <code>GET /funfact</code>
+        <p>Fetches a dynamic plain-text response from an external facts API.</p>
+      </a>
 
-  <code>HTTP 200 OK</code>
-</div>
+      <a class="endpoint-card" href="/httpbingo/stream/100">
+        <code>GET /httpbingo/stream/100</code>
+        <p>Proxies and streams 100 records from httpbingo using chunked encoding and trailers.</p>
+      </a>
+    </aside>
+  </section>
+
+  <section class="grid">
+    <article class="panel section">
+      <h2>Technical Highlights</h2>
+      <ul class="tech-list">
+        <li><strong>Raw HTTP parsing:</strong> request line, headers, and body are parsed from the socket stream without a framework.</li>
+        <li><strong>Bounded parsing:</strong> request growth is capped with an 8 KB max header budget and a 100-header limit.</li>
+        <li><strong>Protocol validation:</strong> malformed request lines, invalid headers, and mismatched content length are rejected.</li>
+        <li><strong>Streaming proxy:</strong> proxied upstream responses are forwarded incrementally instead of being buffered in memory.</li>
+        <li><strong>Flexible responses:</strong> the server emits <code>text/html</code>, <code>text/plain</code>, and upstream content types such as <code>application/json</code>.</li>
+      </ul>
+    </article>
+
+    <article class="panel section">
+      <h2>Project Surface</h2>
+      <div class="link-list">
+        <a class="link-tile" href="/funfact">
+          <strong>/funfact</strong>
+          <span>Shows outbound API usage and dynamic response generation.</span>
+        </a>
+        <a class="link-tile" href="/httpbingo/stream/100">
+          <strong>/httpbingo/stream/100</strong>
+          <span>Demonstrates proxying, chunk boundaries, trailer emission, and back-pressure-friendly streaming.</span>
+        </a>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel footer-note">
+    <strong>Implementation note:</strong> the server handles each connection on a virtual thread and can be deployed with a standard
+    <code>PORT</code> environment variable, which makes it suitable for container-based hosting platforms and portfolio demos.
+  </section>
+</main>
 </body>
 </html>

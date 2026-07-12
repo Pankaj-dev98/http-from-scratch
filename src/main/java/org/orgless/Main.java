@@ -5,8 +5,8 @@ import org.orgless.server.Server;
 import java.util.concurrent.CountDownLatch;
 
 public class Main {
-    static void main(String[] args) {
-        int port = 42069;
+    public static void main(String[] args) {
+        int port = resolvePort();
         try {
             Server server = Server.serve(port);
             // A CountDownLatch is a thread-safe way to make our main thread "wait"
@@ -25,6 +25,19 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Error starting server: " + e.getMessage());
             System.exit(1);
+        }
+    }
+
+    private static int resolvePort() {
+        String portValue = System.getenv("PORT");
+        if (portValue == null || portValue.isBlank()) {
+            return 42069;
+        }
+
+        try {
+            return Integer.parseInt(portValue);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid PORT value: " + portValue, e);
         }
     }
 }
