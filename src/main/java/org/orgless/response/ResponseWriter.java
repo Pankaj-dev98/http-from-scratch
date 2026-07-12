@@ -88,11 +88,20 @@ public class ResponseWriter {
         out.write((chunkSizeHex + CRLF).getBytes(StandardCharsets.UTF_8));
         out.write(data);
         out.write(CRLF_BYTES);
+        out.flush();
     }
 
     public void writeChunkedBodyDone() throws IOException {
-        byte[] end = "0\r\n\r\n".getBytes(StandardCharsets.UTF_8);
+        byte[] end = "0\r\n".getBytes(StandardCharsets.UTF_8);
         out.write(end);
+    }
+
+    public void writeTrailers(Map<String, String> trailers) throws IOException {
+        for (var e : trailers.entrySet()) {
+            out.write((e.getKey() + ": " + e.getValue() + CRLF)
+                .getBytes(StandardCharsets.UTF_8));
+        }
+        out.write(CRLF_BYTES);
         out.flush();
         state = State.DONE;
     }

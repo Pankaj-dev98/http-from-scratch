@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,10 +60,16 @@ public class Controller {
             );
             headers.remove("Content-Length");
             headers.put("Transfer-Encoding", "chunked");
+            headers.put("Trailers", "X-Content-SHA256, X-Content-Length");
 
             w.writeHeaders(headers);
             byte[] buffer = new byte[1024];
             InputStream in = httpBinResponse.body();
+
+            Map<String, String> trailers = new LinkedHashMap<>();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            long totalRawBytes = 0;
+
             while (true) {
                 int bytesRead = in.read(buffer, 0, buffer.length);
 
@@ -70,7 +79,15 @@ public class Controller {
                 }
                 byte[] chunk = Arrays.copyOfRange(buffer,0, bytesRead);
                 w.writeChunkedBody(chunk);
+                totalRawBytes += chunk.length;
+                digest.update(chunk, 0, chunk.length);
             }
+            byte[] hash = digest.digest();
+            String sha256Hex = HexFormat.of().formatHex(hash);
+
+            trailers.put("X-Content-SHA256", sha256Hex);
+            trailers.put("X-Content-Length", totalRawBytes + "");
+            w.writeTrailers(trailers);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("error creating http response: " + e.getMessage());

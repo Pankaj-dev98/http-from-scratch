@@ -107,8 +107,4 @@ public class Server {
             serverSocket.close();
         }
     }
-
-//    static void main() {
-//        System.out.println("abcd");
-//    }
 }
