@@ -109,6 +109,29 @@
           font-size: 0.95rem;
       }
 
+      .hero-links {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 24px;
+      }
+
+      .hero-link {
+          padding: 11px 14px;
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--text);
+          font-size: 0.95rem;
+      }
+
+      .profile-strip {
+          margin-top: 24px;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+      }
+
       .hero-side {
           padding: 24px;
           display: grid;
@@ -148,6 +171,10 @@
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 24px;
           margin-top: 24px;
+      }
+
+      .wide-section {
+          grid-column: 1 / -1;
       }
 
       .section {
@@ -205,9 +232,15 @@
           color: var(--text);
       }
 
+      .profile-list {
+          display: grid;
+          gap: 12px;
+      }
+
       @media (max-width: 920px) {
           .hero,
-          .grid {
+          .grid,
+          .profile-strip {
               grid-template-columns: 1fr;
           }
 
@@ -248,6 +281,19 @@
         <span>Response trailers</span>
         <span>Virtual threads</span>
       </div>
+      <div class="hero-links">
+        <a class="hero-link" href="https://github.com/Pankaj-dev98/http-from-scratch" target="_blank" rel="noreferrer">View GitHub Repository</a>
+      </div>
+      <div class="profile-strip">
+        <a class="link-tile" href="https://github.com/Pankaj-dev98" target="_blank" rel="noreferrer">
+          <strong>GitHub</strong>
+          <span>More backend, systems, and application projects by me (Pankaj Kalra).</span>
+        </a>
+        <a class="link-tile" href="https://leetcode.com/u/Pankaj_Kalra21/" target="_blank" rel="noreferrer">
+          <strong>LeetCode</strong>
+          <span>Problem-solving practice [Data structures and algorithms]<br> and my daily submissions.</span>
+        </a>
+      </div>
     </div>
 
     <aside class="panel hero-side">
@@ -273,7 +319,7 @@
   </section>
 
   <section class="grid">
-    <article class="panel section">
+    <article class="panel section wide-section">
       <h2>Technical Highlights</h2>
       <ul class="tech-list">
         <li><strong>Raw HTTP parsing:</strong> request line, headers, and body are parsed from the socket stream without a framework.</li>
@@ -282,20 +328,6 @@
         <li><strong>Streaming proxy:</strong> proxied upstream responses are forwarded incrementally instead of being buffered in memory.</li>
         <li><strong>Flexible responses:</strong> the server emits <code>text/html</code>, <code>text/plain</code>, and upstream content types such as <code>application/json</code>.</li>
       </ul>
-    </article>
-
-    <article class="panel section">
-      <h2>Project Surface</h2>
-      <div class="link-list">
-        <a class="link-tile" href="/funfact">
-          <strong>/funfact</strong>
-          <span>Shows outbound API usage and dynamic response generation.</span>
-        </a>
-        <a class="link-tile" href="/httpbingo/stream/100">
-          <strong>/httpbingo/stream/100</strong>
-          <span>Demonstrates proxying, chunk boundaries, trailer emission, and back-pressure-friendly streaming.</span>
-        </a>
-      </div>
     </article>
   </section>
 
